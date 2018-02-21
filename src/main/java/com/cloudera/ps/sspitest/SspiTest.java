@@ -56,7 +56,7 @@ public class SspiTest {
         result = Secur32.INSTANCE.InitializeSecurityContext(
                 phCredential,
                 null,
-                args[1],
+                args[0],
                 Sspi.ISC_REQ_CONNECTION,
                 0,
                 Sspi.SECURITY_NATIVE_DREP,
