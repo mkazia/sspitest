@@ -23,10 +23,13 @@ import com.sun.jna.platform.win32.Sspi.SecBufferDesc;
 import com.sun.jna.platform.win32.Sspi.TimeStamp;
 import com.sun.jna.platform.win32.W32Errors;
 import com.sun.jna.ptr.IntByReference;
+import org.apache.commons.io.HexDump;
+
+import java.io.IOException;
 
 
 public class SspiTest {
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException {
 
         if (args.length < 1) {
             System.err.println("SspiTest <SPN>");
@@ -37,7 +40,7 @@ public class SspiTest {
         TimeStamp ptsExpiry = new TimeStamp();
 
         int result = Secur32.INSTANCE.AcquireCredentialsHandle(
-                null, "Negotiate", Sspi.SECPKG_CRED_OUTBOUND, null,
+                null, "Kerberos", Sspi.SECPKG_CRED_OUTBOUND, null,
                 null, null,
                 null, phCredential, ptsExpiry);
         if (result != W32Errors.SEC_E_OK) {
@@ -67,8 +70,10 @@ public class SspiTest {
                 pfContextAttr,
                 null);
 
-        if (result != W32Errors.SEC_E_OK &&
-                result != W32Errors.SEC_I_CONTINUE_NEEDED) {
+        if (result == W32Errors.SEC_E_OK ||
+                result == W32Errors.SEC_I_CONTINUE_NEEDED) {
+            System.err.println("OK or Continue");
+        } else {
             System.err.println(
                     "InitializeSecurityContext result="+ result +"," +
                             " lastErrorCode="+ Native.getLastError());
@@ -76,6 +81,7 @@ public class SspiTest {
         if (phNewContext.dwLower != null &&
                 phNewContext.dwUpper != null &&
                 pbToken.pBuffers[0].getBytes().length > 0) {
+            HexDump.dump(pbToken.pBuffers[0].getBytes(), 0, System.err, 0);
             System.err.println("Success!");
         }
 
